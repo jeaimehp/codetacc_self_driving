@@ -23,6 +23,8 @@ async def receive_frames(reader, writer):
     print("Received frame from: ", addr)
     await queue.put((data, writer))
 
+print("Starting frame server")
+
 receive_coro = asyncio.start_server(receive_frames, '127.0.0.1', 8888, loop=loop)
 process_coro = process_frames(queue)
 server = loop.run_until_complete(asyncio.gather(receive_coro, process_coro))

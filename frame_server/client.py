@@ -3,7 +3,9 @@ import random
 import numpy as np
 import pickle
 import bz2
+import cv2
 
+cap = cv2.VideoCapture(0)
 last_message = None
 
 # This function has driving code
@@ -21,7 +23,9 @@ async def send_frames(message, loop):
         try:
             await asyncio.sleep(3.0, loop)
             reader, writer = await asyncio.open_connection('127.0.0.1', 8888, loop=loop)
-            message = bz2.compress(pickle.dumps(np.zeros((64, 64, 1))))
+            ret, frame = cap.read()
+            gray = cv2.resize(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (64, 64))
+            message = bz2.compress(pickle.dumps(np.resize(gray, (64, 64, 1))))
             print("Sending", len(message), "bytes")
             writer.write(message)
             data = await reader.read(100)
@@ -42,3 +46,4 @@ try:
     loop.run_forever()
 except KeyboardInterrupt:
     loop.close()
+    cap.release()
