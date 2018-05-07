@@ -2,6 +2,7 @@ import asyncio
 import random
 import numpy as np
 import pickle
+import bz2
 
 last_message = None
 
@@ -20,7 +21,8 @@ async def send_frames(message, loop):
         try:
             await asyncio.sleep(3.0, loop)
             reader, writer = await asyncio.open_connection('127.0.0.1', 8888, loop=loop)
-            message = pickle.dumps(np.zeros((64, 64, 1)))
+            message = bz2.compress(pickle.dumps(np.zeros((64, 64, 1))))
+            print("Sending", len(message), "bytes")
             writer.write(message)
             data = await reader.read(100)
             last_message = data.decode()

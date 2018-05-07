@@ -1,6 +1,7 @@
 import asyncio
 import random
 import pickle
+import bz2
 
 loop = asyncio.get_event_loop()
 queue = asyncio.Queue(loop=loop)
@@ -8,7 +9,7 @@ queue = asyncio.Queue(loop=loop)
 async def process_frames(queue):
     while True:
         data, writer = await queue.get()
-        nparray = pickle.loads(data)
+        nparray = pickle.loads(bz2.decompress(data))
         print("Processing: ", nparray.shape)
         # Calculate frame result
         result = "Result: {}".format(random.randint(20, 30))
