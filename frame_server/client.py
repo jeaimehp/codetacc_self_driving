@@ -1,5 +1,7 @@
 import asyncio
 import random
+import numpy as np
+import pickle
 
 last_message = None
 
@@ -15,11 +17,15 @@ async def drive(loop):
 async def send_frames(message, loop):
     global last_message
     while True:
-        await asyncio.sleep(3.0, loop)
-        reader, writer = await asyncio.open_connection('127.0.0.1', 8888, loop=loop)
-        writer.write(message.encode())
-        data = await reader.read(100)
-        last_message = data.decode()
+        try:
+            await asyncio.sleep(3.0, loop)
+            reader, writer = await asyncio.open_connection('127.0.0.1', 8888, loop=loop)
+            message = pickle.dumps(np.zeros((64, 64, 1)))
+            writer.write(message)
+            data = await reader.read(100)
+            last_message = data.decode()
+        except Exception as e:
+            print(e)
         writer.close()
 
 message = 'Hello World {}'.format(random.randint(1, 10))

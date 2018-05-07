@@ -1,5 +1,6 @@
 import asyncio
 import random
+import pickle
 
 loop = asyncio.get_event_loop()
 queue = asyncio.Queue(loop=loop)
@@ -7,7 +8,8 @@ queue = asyncio.Queue(loop=loop)
 async def process_frames(queue):
     while True:
         data, writer = await queue.get()
-        print("Processing: %r" % data.decode())
+        nparray = pickle.loads(data)
+        print("Processing: ", nparray.shape)
         # Calculate frame result
         result = "Result: {}".format(random.randint(20, 30))
         writer.write(result.encode())
@@ -15,10 +17,9 @@ async def process_frames(queue):
 
 async def receive_frames(reader, writer):
     global queue
-    data = await reader.read(100)
-    message = data.decode()
+    data = await reader.read(40000)
     addr = writer.get_extra_info('peername')
-    print("Received %r from %r" % (message, addr))
+    print("Received frame from: ", addr)
     await queue.put((data, writer))
 
 receive_coro = asyncio.start_server(receive_frames, '127.0.0.1', 8888, loop=loop)
