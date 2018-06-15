@@ -18,10 +18,17 @@ async def process_frames(queue):
 
 async def receive_frames(reader, writer):
     global queue
-    data = await reader.read(40000)
-    addr = writer.get_extra_info('peername')
-    print("Received frame from: ", addr)
-    await queue.put((data, writer))
+    while True:
+        try:
+            data = await reader.read(40000)
+            # If data is empty, connection probably terminated
+            if len(data) <= 0:
+                break
+            addr = writer.get_extra_info('peername')
+            print("Received frame from: ", addr)
+            await queue.put((data, writer))
+        except Exception as e:
+            print(e)
 
 print("Starting frame server")
 
